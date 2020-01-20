@@ -1,7 +1,9 @@
 import graphene
+import graphql_jwt
+from graphql_jwt.decorators import login_required
 from graphene_django import DjangoObjectType
 
-from api.models import Movie, Director
+from api.models import Director, Movie
 
 
 class MovieType(DjangoObjectType):
@@ -24,6 +26,7 @@ class Query(graphene.ObjectType):
   
   all_directors = graphene.List(DirectorType)
 
+  @login_required
   def resolve_all_movies(self, info, **kwargs):
     return Movie.objects.all()
 
@@ -87,6 +90,8 @@ class MovieDeleteMutation(graphene.Mutation):
 
 
 class Mutation:
+  token_auth = graphql_jwt.ObtainJSONWebToken.Field()
+
   create_movie = MovieCreateMutation.Field()
   update_movie = MovieCreateMutation.Field()
   delete_movie = MovieDeleteMutation.Field()
