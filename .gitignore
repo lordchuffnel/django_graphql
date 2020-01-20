@@ -3,6 +3,8 @@
 # Edit at https://www.gitignore.io/?templates=django
 
 ### Django ###
+.vscode/
+
 *.log
 *.pot
 *.pyc

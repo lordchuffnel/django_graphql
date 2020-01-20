@@ -1,7 +1,9 @@
 import graphene
+from graphene import relay
 import graphql_jwt
 from graphql_jwt.decorators import login_required
 from graphene_django import DjangoObjectType
+from graphene_django.filter import DjangoFilterConnectionField
 
 from api.models import Director, Movie
 
@@ -20,15 +22,23 @@ class DirectorType(DjangoObjectType):
   class Meta:
     model = Director
 
+# just for relay implementation
+class MovieNode(DjangoObjectType):
+  class Meta:
+    model = Movie
+    filter_fields = ['title', 'year']
+    interfaces = (relay.Node,)
+
 class Query(graphene.ObjectType):
-  all_movies = graphene.List(MovieType)
+  # all_movies = graphene.List(MovieType)
+  all_movies = DjangoFilterConnectionField(MovieNode)
   movie = graphene.Field(MovieType, id=graphene.Int(), jtitle=graphene.String())
   
   all_directors = graphene.List(DirectorType)
 
-  @login_required
-  def resolve_all_movies(self, info, **kwargs):
-    return Movie.objects.all()
+  # @login_required
+  # def resolve_all_movies(self, info, **kwargs):
+  #   return Movie.objects.all()
 
   def resolve_all_directors(self, info, **kwargs):
     return Director.objects.all()
@@ -91,6 +101,7 @@ class MovieDeleteMutation(graphene.Mutation):
 
 class Mutation:
   token_auth = graphql_jwt.ObtainJSONWebToken.Field()
+  verify_token = graphql_jwt.Verify.Field()
 
   create_movie = MovieCreateMutation.Field()
   update_movie = MovieCreateMutation.Field()
